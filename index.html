@@ -1,0 +1,639 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Warranty Hero - Sales Training Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .game-header {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .game-content {
+            padding: 30px;
+        }
+
+        .player-stats, .enemy-stats {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        .player-stats {
+            border-color: #4CAF50;
+        }
+
+        .enemy-stats {
+            border-color: #f44336;
+        }
+
+        .stat-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .health-bar {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-bar {
+            background: linear-gradient(90deg, #2196F3, #1976D2);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .enemy-health-bar {
+            background: linear-gradient(90deg, #f44336, #d32f2f);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .battle-area {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-height: 200px;
+        }
+
+        .enemy-display {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .enemy-speech {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .action-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .battle-log {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .log-player {
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .log-enemy {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .log-system {
+            background: rgba(33, 150, 243, 0.2);
+        }
+
+        .victory-screen, .defeat-screen {
+            text-align: center;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .victory-screen {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .defeat-screen {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .next-btn, .restart-btn, .start-btn {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+        }
+
+        .level-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .game-content {
+                padding: 15px;
+            }
+            
+            .actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🏠 Home Warranty Hero</h1>
+            <p>Master the art of home warranty sales through epic battles!</p>
+        </div>
+        
+        <div class="game-content">
+            <div id="startScreen" class="start-screen">
+                <h2>Welcome, Future Home Warranty Hero!</h2>
+                <p>Face customer objections as monsters and defeat them with your sales skills!</p>
+                <p>Gain experience, level up, and become the ultimate sales champion!</p>
+                <button class="start-btn" onclick="startGame()">Begin Your Journey</button>
+            </div>
+
+            <div id="gameScreen" style="display: none;">
+                <div class="level-info">
+                    <span id="levelDisplay">Level 1</span> | 
+                    <span id="experienceDisplay">EXP: 0</span> | 
+                    <span id="scoreDisplay">Score: 0</span>
+                </div>
+
+                <div class="player-stats">
+                    <h3>🦸 Sales Agent (Level <span id="playerLevel">1</span>)</h3>
+                    <div>
+                        Health: <span id="playerHealth">100</span>/100
+                        <div class="stat-bar">
+                            <div class="health-bar" id="playerHealthBar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        Confidence: <span id="playerConfidence">100</span>/100
+                        <div class="stat-bar">
+                            <div class="confidence-bar" id="playerConfidenceBar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="enemy-stats">
+                    <h3 id="enemyName">🤔 Skeptical Customer</h3>
+                    <div>
+                        Resistance: <span id="enemyHealth">100</span>/100
+                        <div class="stat-bar">
+                            <div class="enemy-health-bar" id="enemyHealthBar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="battle-area">
+                    <div class="enemy-display" id="enemyEmoji">🤔</div>
+                    <div class="enemy-speech" id="enemySpeech">
+                        "I don't think I need a home warranty. My house is pretty new..."
+                    </div>
+                </div>
+
+                <div class="actions" id="actionButtons">
+                    <!-- Action buttons will be populated by JavaScript -->
+                </div>
+
+                <div class="battle-log" id="battleLog">
+                    <div class="log-entry log-system">Battle begins! Use your sales skills wisely!</div>
+                </div>
+            </div>
+
+            <div id="victoryScreen" class="victory-screen" style="display: none;">
+                <h2>🎉 Customer Convinced!</h2>
+                <p id="victoryMessage">Excellent work! You've successfully handled the objection!</p>
+                <p>Experience gained: <span id="expGained">25</span></p>
+                <button class="next-btn" onclick="nextBattle()">Face Next Challenge</button>
+            </div>
+
+            <div id="defeatScreen" class="defeat-screen" style="display: none;">
+                <h2>😞 Training Needed</h2>
+                <p>Don't worry! Every expert was once a beginner. Learn from this experience!</p>
+                <button class="restart-btn" onclick="restartGame()">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            player: {
+                level: 1,
+                health: 100,
+                maxHealth: 100,
+                confidence: 100,
+                maxConfidence: 100,
+                experience: 0,
+                expToNext: 100
+            },
+            enemy: {
+                health: 100,
+                maxHealth: 100,
+                current: 0
+            },
+            currentLevel: 1,
+            score: 0,
+            battleCount: 0
+        };
+
+        // Enemy types with objections and appropriate responses
+        const enemies = [
+            {
+                name: "🤔 Skeptical Customer",
+                emoji: "🤔",
+                health: 80,
+                speech: "I don't think I need a home warranty. My house is pretty new...",
+                weakness: "statistics"
+            },
+            {
+                name: "💰 Budget-Conscious Customer", 
+                emoji: "💰",
+                health: 90,
+                speech: "This seems expensive. I'm not sure I can afford it right now.",
+                weakness: "value"
+            },
+            {
+                name: "🔧 DIY Enthusiast",
+                emoji: "🔧", 
+                health: 100,
+                speech: "I can fix things myself. Why would I pay for someone else to do it?",
+                weakness: "convenience"
+            },
+            {
+                name: "📋 Over-Analyzer",
+                emoji: "📋",
+                health: 85,
+                speech: "I need to research this more and compare with other companies first.",
+                weakness: "urgency"
+            },
+            {
+                name: "😤 Frustrated Previous Customer",
+                emoji: "😤",
+                health: 110,
+                speech: "I had a bad experience with warranties before. They never cover what you need!",
+                weakness: "testimonial"
+            },
+            {
+                name: "🏠 New Homeowner",
+                emoji: "🏠",
+                health: 75,
+                speech: "I just bought this house. Isn't everything covered by the builder's warranty?",
+                weakness: "education"
+            }
+        ];
+
+        // Sales actions with effectiveness against different customer types
+        const actions = [
+            {
+                name: "Share Statistics",
+                type: "statistics",
+                damage: [25, 35],
+                confidenceCost: 10,
+                description: "Present compelling industry data and statistics"
+            },
+            {
+                name: "Explain Value",
+                type: "value", 
+                damage: [20, 30],
+                confidenceCost: 8,
+                description: "Break down cost savings and long-term value"
+            },
+            {
+                name: "Emphasize Convenience",
+                type: "convenience",
+                damage: [15, 25], 
+                confidenceCost: 5,
+                description: "Highlight the ease and peace of mind"
+            },
+            {
+                name: "Create Urgency",
+                type: "urgency",
+                damage: [18, 28],
+                confidenceCost: 12,
+                description: "Explain limited-time offers and immediate protection needs"
+            },
+            {
+                name: "Share Testimonial", 
+                type: "testimonial",
+                damage: [22, 32],
+                confidenceCost: 15,
+                description: "Tell a compelling customer success story"
+            },
+            {
+                name: "Educate Benefits",
+                type: "education",
+                damage: [20, 30],
+                confidenceCost: 8,
+                description: "Explain coverage details and protection benefits"
+            },
+            {
+                name: "Build Rapport",
+                type: "rapport",
+                damage: [10, 20],
+                confidenceCost: 5,
+                description: "Connect personally and build trust"
+            },
+            {
+                name: "Address Concerns",
+                type: "concerns",
+                damage: [15, 25],
+                confidenceCost: 10, 
+                description: "Directly tackle specific worries"
+            }
+        ];
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            resetPlayer();
+            startBattle();
+        }
+
+        function resetPlayer() {
+            gameState.player = {
+                level: 1,
+                health: 100,
+                maxHealth: 100,
+                confidence: 100,
+                maxConfidence: 100,
+                experience: 0,
+                expToNext: 100
+            };
+            gameState.score = 0;
+            gameState.battleCount = 0;
+            updatePlayerDisplay();
+        }
+
+        function startBattle() {
+            // Select random enemy, with difficulty scaling
+            const availableEnemies = enemies.filter((_, index) => 
+                index <= Math.floor(gameState.battleCount / 2)
+            );
+            const randomEnemy = availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
+            
+            gameState.enemy.current = enemies.indexOf(randomEnemy);
+            gameState.enemy.health = randomEnemy.health + (gameState.battleCount * 10);
+            gameState.enemy.maxHealth = gameState.enemy.health;
+            
+            updateEnemyDisplay();
+            updatePlayerDisplay();
+            createActionButtons();
+            addLogEntry('system', `A ${randomEnemy.name} appears!`);
+        }
+
+        function updatePlayerDisplay() {
+            document.getElementById('playerLevel').textContent = gameState.player.level;
+            document.getElementById('playerHealth').textContent = gameState.player.health;
+            document.getElementById('playerConfidence').textContent = gameState.player.confidence;
+            document.getElementById('levelDisplay').textContent = `Level ${gameState.player.level}`;
+            document.getElementById('experienceDisplay').textContent = `EXP: ${gameState.player.experience}`;
+            document.getElementById('scoreDisplay').textContent = `Score: ${gameState.score}`;
+            
+            const healthPercent = (gameState.player.health / gameState.player.maxHealth) * 100;
+            const confidencePercent = (gameState.player.confidence / gameState.player.maxConfidence) * 100;
+            
+            document.getElementById('playerHealthBar').style.width = healthPercent + '%';
+            document.getElementById('playerConfidenceBar').style.width = confidencePercent + '%';
+        }
+
+        function updateEnemyDisplay() {
+            const enemy = enemies[gameState.enemy.current];
+            document.getElementById('enemyName').textContent = enemy.name;
+            document.getElementById('enemyEmoji').textContent = enemy.emoji;
+            document.getElementById('enemySpeech').textContent = enemy.speech;
+            document.getElementById('enemyHealth').textContent = gameState.enemy.health;
+            
+            const healthPercent = (gameState.enemy.health / gameState.enemy.maxHealth) * 100;
+            document.getElementById('enemyHealthBar').style.width = healthPercent + '%';
+        }
+
+        function createActionButtons() {
+            const container = document.getElementById('actionButtons');
+            container.innerHTML = '';
+            
+            actions.forEach((action, index) => {
+                const button = document.createElement('button');
+                button.className = 'action-btn';
+                button.textContent = `${action.name} (-${action.confidenceCost} confidence)`;
+                button.onclick = () => playerAction(index);
+                button.disabled = gameState.player.confidence < action.confidenceCost;
+                container.appendChild(button);
+            });
+        }
+
+        function playerAction(actionIndex) {
+            const action = actions[actionIndex];
+            const enemy = enemies[gameState.enemy.current];
+            
+            if (gameState.player.confidence < action.confidenceCost) return;
+            
+            gameState.player.confidence -= action.confidenceCost;
+            
+            // Calculate damage (higher if action type matches enemy weakness)
+            let damage = Math.floor(Math.random() * (action.damage[1] - action.damage[0] + 1)) + action.damage[0];
+            if (action.type === enemy.weakness) {
+                damage = Math.floor(damage * 1.5);
+                addLogEntry('player', `Super effective! ${action.description}`);
+            } else {
+                addLogEntry('player', action.description);
+            }
+            
+            gameState.enemy.health -= damage;
+            gameState.score += damage;
+            
+            if (gameState.enemy.health <= 0) {
+                victory();
+                return;
+            }
+            
+            updatePlayerDisplay();
+            updateEnemyDisplay();
+            
+            // Enemy counterattack
+            setTimeout(enemyAction, 1000);
+        }
+
+        function enemyAction() {
+            const counterattacks = [
+                "The customer raises another objection!",
+                "They seem more skeptical now...",
+                "Your confidence wavers slightly...",
+                "They bring up a new concern!",
+                "The customer seems unconvinced..."
+            ];
+            
+            const attack = counterattacks[Math.floor(Math.random() * counterattacks.length)];
+            const damage = Math.floor(Math.random() * 15) + 5;
+            
+            gameState.player.health -= damage;
+            addLogEntry('enemy', attack);
+            
+            if (gameState.player.health <= 0) {
+                defeat();
+                return;
+            }
+            
+            updatePlayerDisplay();
+            createActionButtons();
+        }
+
+        function victory() {
+            gameState.battleCount++;
+            const expGained = 25 + (gameState.battleCount * 5);
+            gameState.player.experience += expGained;
+            
+            // Level up check
+            while (gameState.player.experience >= gameState.player.expToNext) {
+                levelUp();
+            }
+            
+            document.getElementById('expGained').textContent = expGained;
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('victoryScreen').style.display = 'block';
+            
+            addLogEntry('system', 'Victory! Customer convinced!');
+        }
+
+        function levelUp() {
+            gameState.player.level++;
+            gameState.player.experience -= gameState.player.expToNext;
+            gameState.player.expToNext = Math.floor(gameState.player.expToNext * 1.2);
+            
+            // Increase max health and confidence
+            gameState.player.maxHealth += 20;
+            gameState.player.maxConfidence += 10;
+            gameState.player.health = gameState.player.maxHealth;
+            gameState.player.confidence = gameState.player.maxConfidence;
+            
+            addLogEntry('system', `Level up! You are now level ${gameState.player.level}!`);
+        }
+
+        function defeat() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('defeatScreen').style.display = 'block';
+            addLogEntry('system', 'Training session ended. Time to practice more!');
+        }
+
+        function nextBattle() {
+            document.getElementById('victoryScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // Restore some health and confidence for next battle
+            gameState.player.health = Math.min(gameState.player.maxHealth, gameState.player.health + 30);
+            gameState.player.confidence = Math.min(gameState.player.maxConfidence, gameState.player.confidence + 50);
+            
+            startBattle();
+        }
+
+        function restartGame() {
+            document.getElementById('defeatScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            resetPlayer();
+            startBattle();
+        }
+
+        function addLogEntry(type, message) {
+            const log = document.getElementById('battleLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Initialize the game
+        updatePlayerDisplay();
+    </script>
+
+
+</body></html>
